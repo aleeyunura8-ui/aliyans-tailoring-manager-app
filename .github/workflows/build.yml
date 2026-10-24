@@ -1,6 +1,6 @@
 name: Aliyans Tailoring Manager Build
 
-'on':
+on
 workflow_dispatch:
 push:
 branches:
