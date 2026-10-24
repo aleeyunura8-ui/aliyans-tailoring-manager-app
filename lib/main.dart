@@ -1,9 +1,12 @@
+
 import 'package:flutter/material.dart';
 
 void main() => runApp(const AliyansApp());
 
-const emerald = Color(0xFF006B4F);
-const gold = Color(0xFFE8B83F);
+const green = Color(0xFF005A3C);
+const darkGreen = Color(0xFF003B2A);
+const gold = Color(0xFFE7B936);
+const bg = Color(0xFFF4F7F6);
 
 class AliyansApp extends StatelessWidget {
   const AliyansApp({super.key});
@@ -15,309 +18,397 @@ class AliyansApp extends StatelessWidget {
       title: 'Aliyans Tailoring Manager',
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: emerald),
-        scaffoldBackgroundColor: const Color(0xFFF5F7F6),
-      ),
-      home: const CustomersPage(),
-    );
-  }
-}
-
-class Customer {
-  String name;
-  String phone;
-  final Map<String, String> measurements;
-
-  Customer({
-    required this.name,
-    required this.phone,
-    required this.measurements,
-  });
-}
-
-class CustomersPage extends StatefulWidget {
-  const CustomersPage({super.key});
-
-  @override
-  State<CustomersPage> createState() => _CustomersPageState();
-}
-
-class _CustomersPageState extends State<CustomersPage> {
-  final List<Customer> customers = [];
-
-  Future<void> addCustomer() async {
-    final result = await Navigator.push<Customer>(
-      context,
-      MaterialPageRoute(builder: (_) => const CustomerFormPage()),
-    );
-
-    if (result != null && mounted) {
-      setState(() => customers.add(result));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: emerald,
-        foregroundColor: Colors.white,
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('ALIYANS STYLE'),
-            Text(
-              'TAILORING CENTER • JEGA',
-              style: TextStyle(fontSize: 11, color: gold),
-            ),
-          ],
+        scaffoldBackgroundColor: bg,
+        colorScheme: ColorScheme.fromSeed(seedColor: green),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: green,
+          foregroundColor: Colors.white,
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Customers',
-              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text('Total customers: ${customers.length}'),
-            const SizedBox(height: 16),
-            Expanded(
-              child: customers.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.people_outline, size: 64, color: emerald),
-                          SizedBox(height: 12),
-                          Text('No customers yet'),
-                          Text('Tap the button below to add a customer.'),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: customers.length,
-                      itemBuilder: (context, index) {
-                        final customer = customers[index];
-                        return Card(
-                          child: ListTile(
-                            leading: const CircleAvatar(
-                              backgroundColor: emerald,
-                              child: Icon(Icons.person, color: Colors.white),
-                            ),
-                            title: Text(customer.name),
-                            subtitle: Text(customer.phone),
-                            trailing: const Icon(Icons.chevron_right),
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      CustomerDetailsPage(customer: customer),
-                                ),
-                              );
-                            },
-                          ),
-                        );
-                      },
-                    ),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: addCustomer,
-        backgroundColor: emerald,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.person_add),
-        label: const Text('Add Customer'),
-      ),
+      home: const DashboardPage(),
     );
   }
 }
 
-class CustomerFormPage extends StatefulWidget {
-  const CustomerFormPage({super.key});
+class DashboardPage extends StatefulWidget {
+  const DashboardPage({super.key});
 
   @override
-  State<CustomerFormPage> createState() => _CustomerFormPageState();
+  State<DashboardPage> createState() => _DashboardPageState();
 }
 
-class _CustomerFormPageState extends State<CustomerFormPage> {
-  final formKey = GlobalKey<FormState>();
-  final nameController = TextEditingController();
-  final phoneController = TextEditingController();
+class _DashboardPageState extends State<DashboardPage> {
+  int selectedTab = 0;
 
-  final fields = const [
-    ('Neck (Wuya)', 'neck'),
-    ('Shoulder (Kafada)', 'shoulder'),
-    ('Sleeve (Hannu)', 'sleeve'),
-    ('Shirt Length (Tsawon Riga)', 'shirtLength'),
-    ('Shirt Width (Fadin Riga)', 'shirtWidth'),
-    ('Trouser Length (Tsawon Wando)', 'trouserLength'),
-    ('Waist Width (Fadin Kugu)', 'waistWidth'),
+  final sections = const [
+    ('Customers', 'View & Manage', Icons.groups, Colors.green),
+    ('Groups', 'View & Manage', Icons.group_work, gold),
+    ('Orders', 'All Orders', Icons.assignment, Colors.blue),
+    ('Measurements', '7 Standard Sizes', Icons.straighten, Colors.purple),
+    ('Payments', 'Record & Track', Icons.account_balance_wallet, Colors.red),
+    ('Receipts', 'Generate & Share', Icons.receipt_long, Colors.green),
+    ('Deliveries', 'Track Deliveries', Icons.local_shipping, Colors.orange),
+    ('Reports', 'Business Reports', Icons.bar_chart, Colors.blue),
+    ('Settings', 'App Preferences', Icons.settings, Colors.blueGrey),
   ];
 
-  final Map<String, TextEditingController> measurementControllers = {};
-
-  @override
-  void initState() {
-    super.initState();
-    for (final field in fields) {
-      measurementControllers[field.$2] = TextEditingController();
-    }
-  }
-
-  @override
-  void dispose() {
-    nameController.dispose();
-    phoneController.dispose();
-    for (final controller in measurementControllers.values) {
-      controller.dispose();
-    }
-    super.dispose();
+  void openSection(String name) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SectionPage(title: name),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Add Customer'),
-        backgroundColor: emerald,
-        foregroundColor: Colors.white,
+      body: SafeArea(
+        bottom: false,
+        child: CustomScrollView(
+          slivers: [
+            SliverToBoxAdapter(child: header()),
+            SliverToBoxAdapter(child: statistics()),
+            SliverToBoxAdapter(child: quickActions()),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(16, 18, 16, 8),
+              sliver: SliverGrid(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final item = sections[index];
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(18),
+                      onTap: () => openSection(item.$1),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: Colors.black12),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x10000000),
+                              blurRadius: 7,
+                              offset: Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(item.$3, size: 35, color: item.$4),
+                            const SizedBox(height: 9),
+                            FittedBox(
+                              child: Text(
+                                item.$1,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 5),
+                            FittedBox(
+                              child: Text(
+                                item.$2,
+                                style: const TextStyle(
+                                  color: Colors.black54,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  childCount: sections.length,
+                ),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 0.88,
+                ),
+              ),
+            ),
+            SliverToBoxAdapter(child: contactCard()),
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
+          ],
+        ),
       ),
-      body: Form(
-        key: formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const Text(
-              'Customer Information',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Full Name *',
-                border: OutlineInputBorder(),
-              ),
-              validator: (value) => value == null || value.trim().isEmpty
-                  ? 'Enter customer name'
-                  : null,
-            ),
-            const SizedBox(height: 12),
-            TextFormField(
-              controller: phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(
-                labelText: 'Phone Number',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              'Complete Set Measurements',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 6),
-            const Text('Enter measurements using your preferred unit.'),
-            const SizedBox(height: 12),
-            for (final field in fields) ...[
-              TextFormField(
-                controller: measurementControllers[field.$2],
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: field.$1,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
-            FilledButton.icon(
-              style: FilledButton.styleFrom(
-                backgroundColor: emerald,
-                padding: const EdgeInsets.all(16),
-              ),
-              onPressed: () {
-                if (!formKey.currentState!.validate()) return;
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: darkGreen,
+        selectedItemColor: gold,
+        unselectedItemColor: Colors.white70,
+        currentIndex: selectedTab,
+        onTap: (index) {
+          setState(() => selectedTab = index);
+          if (index != 0) {
+            const names = ['Home', 'Customers', 'Groups', 'Orders', 'More'];
+            openSection(names[index]);
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.groups), label: 'Customers'),
+          BottomNavigationBarItem(icon: Icon(Icons.group_work), label: 'Groups'),
+          BottomNavigationBarItem(icon: Icon(Icons.assignment), label: 'Orders'),
+          BottomNavigationBarItem(icon: Icon(Icons.apps), label: 'More'),
+        ],
+      ),
+    );
+  }
 
-                final measurements = <String, String>{};
-                for (final field in fields) {
-                  measurements[field.$1] =
-                      measurementControllers[field.$2]!.text.trim();
-                }
+  Widget header() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(18, 28, 18, 25),
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [darkGreen, green, Color(0xFF08764E)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.design_services, color: gold, size: 55),
+          const SizedBox(height: 8),
+          const Text(
+            'ALIYANS STYLE',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: gold,
+              fontSize: 27,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1,
+            ),
+          ),
+          const Text(
+            'TAILORING CENTER',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Jega, Kebbi State, Nigeria',
+            style: TextStyle(color: Colors.white70, fontSize: 14),
+          ),
+          const SizedBox(height: 15),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+            decoration: BoxDecoration(
+              color: gold,
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: const Text(
+              'TAILORING MANAGER',
+              style: TextStyle(
+                color: darkGreen,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
-                Navigator.pop(
-                  context,
-                  Customer(
-                    name: nameController.text.trim(),
-                    phone: phoneController.text.trim(),
-                    measurements: measurements,
+  Widget statistics() {
+    final stats = [
+      ('Customers', '0', Icons.person, Colors.green),
+      ('Groups', '0', Icons.groups, gold),
+      ('Total Orders', '0', Icons.assignment, Colors.blue),
+      ('Total Revenue', '₦0', Icons.database, Colors.purple),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 8),
+      child: Row(
+        children: stats.map((s) {
+          return Expanded(
+            child: Container(
+              height: 112,
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 10),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: Colors.black12),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(s.$3, color: s.$4, size: 27),
+                  const SizedBox(height: 7),
+                  FittedBox(
+                    child: Text(s.$1, style: const TextStyle(fontSize: 10)),
                   ),
-                );
-              },
-              icon: const Icon(Icons.save),
-              label: const Text('Save Customer'),
+                  const SizedBox(height: 5),
+                  FittedBox(
+                    child: Text(
+                      s.$2,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
+  Widget quickActions() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: actionButton(
+              'Add Customer',
+              'Individual Measurements',
+              Icons.person_add,
+              green,
+              Colors.white,
+              () => openSection('Add Customer'),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: actionButton(
+              'Add Group',
+              'Multiple People',
+              Icons.group_add,
+              gold,
+              darkGreen,
+              () => openSection('Add Group'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget actionButton(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+    Color textColor,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        height: 112,
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: gold, width: 1.5),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: textColor, size: 30),
+            const SizedBox(height: 6),
+            FittedBox(
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: textColor,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+            const SizedBox(height: 4),
+            FittedBox(
+              child: Text(
+                subtitle,
+                style: TextStyle(color: textColor, fontSize: 10),
+              ),
             ),
           ],
         ),
       ),
     );
   }
+
+  Widget contactCard() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: ListTile(
+        tileColor: const Color(0xFFDDF3E8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Color(0xFFB7DECB)),
+        ),
+        leading: const Icon(Icons.chat, color: green, size: 36),
+        title: const Text(
+          'Contact Customer',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: const Text('Send Updates via WhatsApp'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => openSection('Contact Customer'),
+      ),
+    );
+  }
 }
 
-class CustomerDetailsPage extends StatelessWidget {
-  final Customer customer;
+class SectionPage extends StatelessWidget {
+  final String title;
 
-  const CustomerDetailsPage({super.key, required this.customer});
+  const SectionPage({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Customer Details'),
-        backgroundColor: emerald,
-        foregroundColor: Colors.white,
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            child: ListTile(
-              leading: const CircleAvatar(
-                backgroundColor: emerald,
-                child: Icon(Icons.person, color: Colors.white),
-              ),
-              title: Text(
-                customer.name,
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(customer.phone.isEmpty ? 'No phone number' : customer.phone),
-            ),
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Measurements',
-            style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          for (final entry in customer.measurements.entries)
-            Card(
-              child: ListTile(
-                title: Text(entry.key),
-                trailing: Text(
-                  entry.value.isEmpty ? 'Not entered' : entry.value,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+      appBar: AppBar(title: Text(title)),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.construction, size: 65, color: green),
+              const SizedBox(height: 16),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 23,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ),
-        ],
+              const SizedBox(height: 10),
+              const Text(
+                'This section is being prepared. Customer records, '
+                'measurements, orders and payments will be added step by step.',
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              FilledButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Back to Dashboard'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
