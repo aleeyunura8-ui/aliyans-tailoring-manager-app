@@ -1,42 +1,42 @@
 name: Aliyans Tailoring Manager Build
 
-"on":
-workflow_dispatch:
-push:
-branches:
-- main
+'on':
+  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 permissions:
-contents: read
+  contents: read
 
 jobs:
-build:
-runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  - name: Install Flutter
-    uses: subosito/flutter-action@v2
-    with:
-      channel: stable
-      cache: true
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
 
-  - name: Check Flutter version
-    run: flutter --version
+      - name: Check Flutter version
+        run: flutter --version
 
-  - name: Generate Android platform files
-    run: flutter create --platforms=android --project-name=aliyans_tailoring_manager .
+      - name: Generate Android platform files
+        run: flutter create --platforms=android --project-name=aliyans_tailoring_manager .
 
-  - name: Install packages
-    run: flutter pub get
+      - name: Install packages
+        run: flutter pub get
 
-  - name: Build release APK
-    run: flutter build apk --release
+      - name: Build release APK
+        run: flutter build apk --release
 
-  - name: Upload APK
-    uses: actions/upload-artifact@v4
-    with:
-      name: aliyans-tailoring-manager-apk
-      path: build/app/outputs/flutter-apk/app-release.apk
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: aliyans-tailoring-manager-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
